@@ -20,7 +20,7 @@ const UserSchema = mongoose.Schema({
     password: {
         type: String, required: true
     },
-    profilePic: { type: String, default: '/public/profileImages/person_placeholder.png' }
+    profilePic: { type: String, default: 'public/profileImages/person_placeholder.jpeg' }
 }, { timestamps: true })
 
 export default mongoose.model('User', UserSchema);

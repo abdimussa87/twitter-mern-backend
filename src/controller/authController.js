@@ -24,8 +24,8 @@ const signup = (req, res) => {
                     res.status(500).send(err.message)
                 } else {
                     const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET, { expiresIn: '10d' })
-                    const { _id, firstName, lastName, email, username } = data;
-                    res.status(201).send({ token, user: { _id, firstName, lastName, email, username } })
+                    const { _id, firstName, lastName, email, username, profilePic } = data;
+                    res.status(201).send({ token, user: { _id, firstName, lastName, email, username, profilePic } })
                 }
             })
         }
@@ -45,8 +45,8 @@ const signin = (req, res) => {
             const validCredential = await bcrypt.compare(req.body.password, user.password)
             if (validCredential) {
                 const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '10d' });
-                const { _id, firstName, lastName, email, username } = user;
-                res.status(200).send({ token, user: { _id, firstName, lastName, email, username } })
+                const { _id, firstName, lastName, email, username, profilePic } = user;
+                res.status(200).send({ token, user: { _id, firstName, lastName, email, username, profilePic } })
 
             }
             else {
