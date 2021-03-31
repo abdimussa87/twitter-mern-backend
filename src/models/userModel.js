@@ -20,6 +20,7 @@ const UserSchema = mongoose.Schema({
     password: {
         type: String, required: true
     },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
     profilePic: { type: String, default: 'public/profileImages/person_placeholder.jpeg' }
 }, { timestamps: true })
 
