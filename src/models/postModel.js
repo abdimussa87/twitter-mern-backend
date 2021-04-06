@@ -6,7 +6,19 @@ const PostSchema = mongoose.Schema({
     pinned: { type: Boolean, default: false },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     retweetUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    retweetData: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }
+    retweetData: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
+    replyTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }
 }, { timestamps: true })
 
+
+PostSchema.pre('deleteOne', { document: true, query: false }, function (next) {
+    const postId = this._id;
+    mongoose.model("Post").deleteMany({ replyTo: postId }, function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            next();
+        }
+    });
+})
 export default mongoose.model('Post', PostSchema);

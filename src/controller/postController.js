@@ -1,25 +1,31 @@
 import PostCollection from '../models/postModel.js'
 import UserCollection from '../models/userModel.js'
 export const createPost = (req, res) => {
-    const { content } = req.body
-    if (content) {
-        PostCollection.create({ content, postedBy: req.userId }, async (err, createdPost) => {
-            if (err) {
-                res.status(500).json({ message: err })
-            } else {
-                try {
-                    createdPost = await UserCollection.populate(createdPost, { path: 'postedBy', select: 'profilePic firstName lastName username _id' })
-                    let sendablePost = { ...createdPost.toObject(), likes: [], isLiked: false, isRetweeted: false }
-                    res.status(201).json({ createdPost: sendablePost })
-                } catch (err) {
-                    return res.status(500).json({ message: err })
-                }
-
-            }
-        })
-    } else {
-        res.sendStatus(400)
+    const { content, replyTo } = req.body
+    if (!content) {
+        return res.sendStatus(400)
     }
+    const newPost = {}
+    newPost.content = content;
+    newPost.postedBy = req.userId;
+    if (replyTo) {
+        newPost.replyTo = replyTo;
+    }
+    PostCollection.create(newPost, async (err, createdPost) => {
+        if (err) {
+            res.status(500).json({ message: err })
+        } else {
+            try {
+                createdPost = await UserCollection.populate(createdPost, { path: 'postedBy', select: 'profilePic firstName lastName username _id' })
+                let sendablePost = { ...createdPost.toObject(), likes: [], isLiked: false, isRetweeted: false }
+                res.status(201).json({ createdPost: sendablePost })
+            } catch (err) {
+                return res.status(500).json({ message: err })
+            }
+
+        }
+    })
+
 }
 
 export const getPosts = async (req, res) => {
@@ -27,9 +33,12 @@ export const getPosts = async (req, res) => {
         let postsFromDb = await PostCollection.find({})
             .populate({ path: 'postedBy', select: 'profilePic firstName lastName username _id' })
             .populate('retweetData')
+            .populate('replyTo')
             .sort({ createdAt: -1 })
         const posts = []
         postsFromDb = await UserCollection.populate(postsFromDb, { path: 'retweetData.postedBy', select: 'profilePic firstName lastName username _id' })
+        postsFromDb = await UserCollection.populate(postsFromDb, { path: 'replyTo.postedBy', select: 'profilePic firstName lastName username _id' })
+
         postsFromDb.forEach((post) => {
             let isLiked = false;
             let isRetweeted = false;
@@ -47,6 +56,49 @@ export const getPosts = async (req, res) => {
         res.status(500).json({ message: err })
     }
 
+}
+export const getPost = async (req, res) => {
+    const postId = req.params.id
+    try {
+        let postFromDb = await PostCollection.findById(postId)
+            .populate({ path: 'postedBy', select: 'profilePic firstName lastName username _id' })
+            .populate('retweetData')
+            .populate('replyTo')
+            .sort({ createdAt: -1 })
+        const post = { ...postFromDb.toObject() }
+
+        postFromDb = await UserCollection.populate(postFromDb, { path: 'retweetData.postedBy', select: 'profilePic firstName lastName username _id' })
+        postFromDb = await UserCollection.populate(postFromDb, { path: 'replyTo.postedBy', select: 'profilePic firstName lastName username _id' })
+
+        postFromDb.likes.includes(req.userId) ?
+            post.isLiked = true :
+            post.isLiked = false;
+        postFromDb.retweetUsers.includes(req.userId) ?
+            post.isRetweeted = true :
+            post.isRetweeted = false;
+
+        res.status(200).json({ post })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ message: err })
+    }
+
+}
+
+export const deletePost = async (req, res) => {
+    const postId = req.params.id
+    if (!postId) {
+        return res.sendStatus(400)
+    }
+    try {
+        const doc = await PostCollection.findOne({ _id: postId })
+        await doc.deleteOne()
+        res.sendStatus(204)
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: err })
+
+    }
 }
 
 export const likePost = async (req, res) => {

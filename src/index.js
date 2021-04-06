@@ -29,6 +29,7 @@ mongoose.connect("mongodb://localhost/twitter-clone", {
     useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useFindAndModify: false
 }).then(value => console.log('Connected to db'));
 
 
