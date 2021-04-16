@@ -16,6 +16,13 @@ export const createPost = (req, res) => {
             res.status(500).json({ message: err })
         } else {
             try {
+                if (replyTo) {
+                    await PostCollection.findByIdAndUpdate(replyTo, {
+                        '$addToSet': {
+                            replyUsers: req.userId
+                        }
+                    })
+                }
                 createdPost = await UserCollection.populate(createdPost, { path: 'postedBy', select: 'profilePic firstName lastName username _id' })
                 createdPost = await PostCollection.populate(createdPost, { path: 'replyTo' })
                 createdPost = await UserCollection.populate(createdPost, { path: 'replyTo.postedBy', select: 'profilePic firstName lastName username _id' })
@@ -30,14 +37,20 @@ export const createPost = (req, res) => {
 }
 
 export const getPosts = async (req, res) => {
+    let filter = {}
+
+    if (req.query.replies) {
+        filter.replyTo = req.query.replies
+    }
     try {
-        let postsFromDb = await PostCollection.find({})
+        let postsFromDb = await PostCollection.find(filter)
             .populate({ path: 'postedBy', select: 'profilePic firstName lastName username _id' })
             .populate('retweetData')
             .populate('replyTo')
             .sort({ createdAt: -1 })
         postsFromDb = await UserCollection.populate(postsFromDb, { path: 'retweetData.postedBy', select: 'profilePic firstName lastName username _id' })
         postsFromDb = await UserCollection.populate(postsFromDb, { path: 'replyTo.postedBy', select: 'profilePic firstName lastName username _id' })
+        console.log(postsFromDb)
         res.status(200).json({ posts: postsFromDb })
     } catch (err) {
         console.log(err)
@@ -53,18 +66,9 @@ export const getPost = async (req, res) => {
             .populate('retweetData')
             .populate('replyTo')
             .sort({ createdAt: -1 })
-        // const post = { ...postFromDb.toObject() }
 
         postFromDb = await UserCollection.populate(postFromDb, { path: 'retweetData.postedBy', select: 'profilePic firstName lastName username _id' })
         postFromDb = await UserCollection.populate(postFromDb, { path: 'replyTo.postedBy', select: 'profilePic firstName lastName username _id' })
-
-        // postFromDb.likes.includes(req.userId) ?
-        //     post.isLiked = true :
-        //     post.isLiked = false;
-        // postFromDb.retweetUsers.includes(req.userId) ?
-        //     post.isRetweeted = true :
-        //     post.isRetweeted = false;
-
         res.status(200).json({ post: postFromDb })
     } catch (err) {
         console.log(err)

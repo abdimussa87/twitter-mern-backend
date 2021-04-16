@@ -7,6 +7,7 @@ const PostSchema = mongoose.Schema({
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     retweetUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     retweetData: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
+    replyUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     replyTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }
 }, { timestamps: true })
 
