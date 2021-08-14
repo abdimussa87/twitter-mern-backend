@@ -2,6 +2,8 @@ import express from 'express'
 import mongoose from 'mongoose'
 import authRoutes from './routes/authRoutes.js'
 import postRoutes from './routes/postRoutes.js'
+import userRoutes from './routes/userRoutes.js'
+
 
 import cors from 'cors'
 import dotenv from 'dotenv'
@@ -20,6 +22,8 @@ app.use(cors());
 app.use(express.json())
 app.use('/api', authRoutes);
 app.use('/api', postRoutes);
+app.use('/api', userRoutes);
+
 
 
 app.use('/public/profileImages', express.static(path.join('./src', 'uploads/profilePictures')))

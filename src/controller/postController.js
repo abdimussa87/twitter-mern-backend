@@ -50,7 +50,6 @@ export const getPosts = async (req, res) => {
             .sort({ createdAt: -1 })
         postsFromDb = await UserCollection.populate(postsFromDb, { path: 'retweetData.postedBy', select: 'profilePic firstName lastName username _id' })
         postsFromDb = await UserCollection.populate(postsFromDb, { path: 'replyTo.postedBy', select: 'profilePic firstName lastName username _id' })
-        console.log(postsFromDb)
         res.status(200).json({ posts: postsFromDb })
     } catch (err) {
         console.log(err)

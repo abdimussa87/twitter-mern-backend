@@ -12,4 +12,5 @@ router.put('/posts/:id/unlike', isAuthorized, unlikePost)
 router.post('/posts/:id/retweet', isAuthorized, retweetPost)
 router.delete('/posts/:id/unretweet', isAuthorized, unretweetPost)
 
+
 export default router;
