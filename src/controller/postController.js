@@ -48,6 +48,9 @@ export const getPosts = async (req, res) => {
   if (req.query.replies) {
     filter.replyTo = req.query.replies;
   }
+  if(req.query.searchTerm){
+    filter.content={$regex:req.query.searchTerm,$options:"i"}
+  }
   try {
     let postsFromDb = await PostCollection.find(filter)
       .populate({

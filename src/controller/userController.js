@@ -3,7 +3,7 @@ import PostCollection from "../models/postModel.js";
 
 export const getUser = async (req, res) => {
   const usernameOrId = req.params.usernameOrId;
-  const hasReply = req.query.hasReply =="true";
+  const hasReply = req.query.hasReply == "true";
   try {
     var user = await UserCollection.findOne({ username: usernameOrId });
     if (user == null) {
@@ -12,7 +12,10 @@ export const getUser = async (req, res) => {
         return res.sendStatus(404);
       }
     }
-    let postsFromDb = await PostCollection.find({postedBy:user._id,replyTo:{$exists:hasReply}})
+    let postsFromDb = await PostCollection.find({
+      postedBy: user._id,
+      replyTo: { $exists: hasReply },
+    })
       .populate({
         path: "postedBy",
         select: "profilePic firstName lastName username _id",
@@ -28,7 +31,30 @@ export const getUser = async (req, res) => {
       path: "replyTo.postedBy",
       select: "profilePic firstName lastName username _id",
     });
-    res.status(200).json({ user: user,posts:postsFromDb });
+    res.status(200).json({ user: user, posts: postsFromDb });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err });
+  }
+};
+
+export const getUsers = async (req, res) => {
+  const searchTerm = req.query.searchTerm;
+  var filter = {};
+  // the i is for case insensitive search
+  if (searchTerm) {
+    filter = {
+      $or: [
+        { firstName: { $regex: searchTerm, $options: "i" } },
+        { lastName: { $regex: searchTerm, $options: "i" } },
+        { username: { $regex: searchTerm, $options: "i" } }
+      ],
+    };
+  }
+  try {
+    var users = await UserCollection.find(filter);
+
+    res.status(200).json({ users });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: err });
