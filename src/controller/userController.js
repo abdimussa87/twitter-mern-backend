@@ -52,7 +52,7 @@ export const getUsers = async (req, res) => {
     };
   }
   try {
-    var users = await UserCollection.find(filter);
+    var users = await UserCollection.find(filter).select("-password");
 
     res.status(200).json({ users });
   } catch (err) {
