@@ -1,8 +1,8 @@
 import MessageCollection from "../models/messageModel.js";
 import UserCollection from "../models/userModel.js";
-import mongoose from "mongoose";
+import ChatCollection from "../models/chatModel.js";
 
-export const createMessage = (req, res) => {
+export const createMessage = async (req, res) => {
   const { content, chatId } = req.body;
 
   if (!content || !chatId) {
@@ -10,17 +10,48 @@ export const createMessage = (req, res) => {
       .status(400)
       .json({ message: "Bad request, required fields not there" });
   }
+  try {
+    let message = await MessageCollection.create({
+      content,
+      chat: chatId,
+      sender: req.userId,
+    });
+    message = await UserCollection.populate(message, {
+        path: "sender",
+        select: "-password",
+      });
+    res.status(201).send({
+      data:message,
+    });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
 
-  MessageCollection.create(
-    { content, chat: chatId, sender: req.userId },
-    (err, data) => {
-      if (err) {
-        res.status(500).send(err.message);
-      } else {
-        res.status(201).send({
-          data,
-        });
-      }
-    }
-  );
+export const getChatMessages = async (req, res) => {
+  const { chatId } = req.params;
+  if (!chatId) {
+    return res
+      .status(400)
+      .json({ message: "Bad request, required fields not there" });
+  }
+
+  try {
+    let messages = await MessageCollection.find({
+      chat: chatId,
+    });
+
+    messages = await UserCollection.populate(messages, {
+      path: "sender",
+      select: "-password",
+    });
+    messages = await ChatCollection.populate(messages, {
+      path: "chat",
+    });
+    return res.status(200).send({
+      messages,
+    });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };
