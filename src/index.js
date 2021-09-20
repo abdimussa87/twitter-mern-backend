@@ -4,6 +4,8 @@ import authRoutes from './routes/authRoutes.js'
 import postRoutes from './routes/postRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import chatRoutes from './routes/chatRoutes.js'
+import messageRoutes from './routes/messageRoutes.js'
+
 
 
 
@@ -26,6 +28,8 @@ app.use('/api', authRoutes);
 app.use('/api', postRoutes);
 app.use('/api', userRoutes);
 app.use('/api', chatRoutes);
+app.use('/api', messageRoutes);
+
 
 
 
