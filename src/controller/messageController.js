@@ -16,9 +16,16 @@ export const createMessage = async (req, res) => {
       chat: chatId,
       sender: req.userId,
     });
+    await ChatCollection.findByIdAndUpdate(chatId,{latestMessage:message});
     message = await UserCollection.populate(message, {
         path: "sender",
         select: "-password",
+      });
+      message = await ChatCollection.populate(message, {
+        path: "chat",
+      });
+      message = await UserCollection.populate(message, {
+        path: "chat.users",
       });
     res.status(201).send({
       data:message,

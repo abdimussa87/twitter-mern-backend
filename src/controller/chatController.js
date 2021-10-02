@@ -1,5 +1,6 @@
 import ChatCollection from "../models/chatModel.js";
 import UserCollection from "../models/userModel.js";
+import MessageCollection from "../models/messageModel.js";
 import mongoose from "mongoose";
 
 export const createChat =async (req, res) => {
@@ -78,7 +79,13 @@ export const getUsersChat = async (req, res) => {
       path: "users",
       select: "-password",
     });
-
+    chats = await MessageCollection.populate(chats, {
+      path: "latestMessage",
+    });
+    chats = await UserCollection.populate(chats, {
+      path: "latestMessage.sender",
+      select: "-password",
+    });
     return res.status(200).send({
       chats,
     });
