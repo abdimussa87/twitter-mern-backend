@@ -34,7 +34,7 @@ app.use(
 
 // *Database connection
 mongoose
-  .connect("mongodb://localhost/twitter-clone", {
+  .connect("mongodb+srv://my_user:N4zL2NGS32LLbus@cluster0.gmjca.mongodb.net/twitter-clone?retryWrites=true&w=majority", {
     useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
